@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fortress Console — JAMMER-FORTRESS</title>
+<style>
+:root{--a:#5E9FE8;--b:#72BC8F}
+html[data-theme="dark"]{--bg:#0d0d10;--surface:rgba(255,255,255,.05);--raised:rgba(255,255,255,.09);
+  --border:rgba(255,255,255,.13);--text:#f2f2f5;--muted:rgba(242,242,245,.6);--input:rgba(0,0,0,.35);
+  --shadow:0 18px 50px rgba(0,0,0,.45);--good:#72BC8F;--bad:#E97366}
+html[data-theme="light"]{--bg:#f5f4f2;--surface:rgba(255,255,255,.72);--raised:rgba(255,255,255,.95);
+  --border:rgba(0,0,0,.12);--text:#1d1d1f;--muted:rgba(29,29,31,.6);--input:rgba(255,255,255,.9);
+  --shadow:0 14px 40px rgba(0,0,0,.12);--good:#1e7a46;--bad:#c23325}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh}
+body::before{content:"";position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(50rem 34rem at 10% -10%,color-mix(in srgb,var(--a) 20%,transparent),transparent 60%),
+             radial-gradient(46rem 32rem at 105% 20%,color-mix(in srgb,var(--b) 15%,transparent),transparent 60%)}
+.top{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border);
+  background:var(--surface);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  position:sticky;top:0;z-index:5;flex-wrap:wrap}
+.logo{font-weight:800;letter-spacing:.12em;font-size:13.5px;white-space:nowrap}
+.logo em{font-style:normal;color:var(--a)}
+.spacer{flex:1}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--border);
+  border-radius:999px;background:var(--raised);font-size:12.5px;color:var(--muted)}
+.chip b{color:var(--text)}
+button,.btn{font:inherit;cursor:pointer;border:1px solid var(--border);background:var(--raised);
+  color:var(--text);border-radius:10px;padding:8px 14px;font-weight:600;transition:transform .12s,filter .12s}
+button:hover{transform:translateY(-1px)}
+button.primary{background:linear-gradient(135deg,var(--a),color-mix(in srgb,var(--a) 55%,var(--b)));
+  border-color:transparent;color:#0b0b0e}
+button:disabled{opacity:.55;cursor:not-allowed;transform:none}
+input[type=color]{width:30px;height:30px;border:1px solid var(--border);border-radius:8px;
+  padding:2px;background:var(--raised);cursor:pointer}
+.colorlab{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+main{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:18px;
+  max-width:1240px;margin:0 auto;padding:20px}
+.col{display:flex;flex-direction:column;gap:18px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow)}
+.panel h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.deck{display:flex;gap:10px}
+.deck input{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1px solid var(--border);
+  background:var(--input);color:var(--text);font:inherit}
+.deck input:focus{outline:2px solid color-mix(in srgb,var(--a) 60%,transparent)}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.quick button{font-size:12.5px;padding:6px 12px;border-radius:999px;font-weight:500}
+#feed{display:flex;flex-direction:column;gap:10px;margin-top:14px;max-height:52vh;overflow:auto}
+.entry{border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:var(--raised);font-size:13.5px}
+.entry .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--a);font-weight:700}
+.entry.err .k{color:var(--bad)}
+.entry pre{white-space:pre-wrap;word-break:break-word;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color:var(--text);margin-top:6px}
+.kv{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.kv span{border:1px solid var(--border);border-radius:8px;padding:3px 9px;font-size:12px;color:var(--muted)}
+.kv span b{color:var(--text)}
+.gauge{height:10px;border-radius:999px;background:var(--input);overflow:hidden;margin:8px 0 4px}
+.gauge i{display:block;height:100%;width:0%;border-radius:999px;
+  background:linear-gradient(90deg,var(--bad),#DE9255,var(--good));transition:width .5s}
+form.qr{display:grid;gap:10px}
+form.qr input[type=text]{padding:11px 13px;border-radius:10px;border:1px solid var(--border);
+  background:var(--input);color:var(--text);font:inherit;width:100%}
+.qrrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+select{font:inherit;padding:7px 10px;border-radius:10px;border:1px solid var(--border);
+  background:var(--raised);color:var(--text)}
+#qrOut{display:grid;place-items:center;min-height:120px;border:1px dashed var(--border);
+  border-radius:12px;padding:10px;background:var(--input)}
+#qrOut svg{max-width:230px;height:auto;border-radius:8px}
+#live{max-height:200px;overflow:auto;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--muted)}
+#live div{padding:2px 0;border-bottom:1px dashed var(--border)}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+.modal{position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:20}
+.modal .panel{width:min(400px,92vw)}
+.modal h1{font-size:20px;margin-bottom:4px}
+.modal p{color:var(--muted);font-size:13.5px;margin-bottom:14px}
+.modal form{display:grid;gap:10px}
+.modal input{padding:12px 14px;border-radius:10px;border:1px solid var(--border);
+  background:var(--input);color:var(--text);font:inherit}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs button{flex:1;font-size:13px}
+.tabs button.on{background:linear-gradient(135deg,var(--a),color-mix(in srgb,var(--a) 55%,var(--b)));
+  color:#0b0b0e;border-color:transparent}
+#authErr{color:var(--bad);font-size:13px;min-height:18px}
+.hidden{display:none !important}
+@media (max-width:900px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo">🔐 JAMMER-<em>FORTRESS</em> CONSOLE</div>
+  <span class="chip" id="who">not signed in</span>
+  <span class="chip" id="usage">—</span>
+  <div class="spacer"></div>
+  <label class="colorlab">A <input type="color" id="accA" value="#5E9FE8" aria-label="accent A"></label>
+  <label class="colorlab">B <input type="color" id="accB" value="#72BC8F" aria-label="accent B"></label>
+  <button id="themeBtn" aria-label="toggle theme">◑ Theme</button>
+  <button id="upgradeBtn">Upgrade</button>
+  <button id="logoutBtn">Sign out</button>
+</header>
+
+<main>
+  <div class="col">
+    <section class="panel">
+      <h2>Command deck — just type what you want</h2>
+      <div class="deck">
+        <input id="cmdIn" placeholder='e.g. "remember Mason\'s hearing is on the 14th" or "find anything about the lease"' autocomplete="off">
+        <button class="primary" id="sendBtn">Send</button>
+      </div>
+      <div class="quick">
+        <button data-q="recall">Show recent memory</button>
+        <button data-q="audit">Run contradiction audit</button>
+        <button data-q="stats">Fortress stats</button>
+        <button data-q="persist">Save state</button>
+      </div>
+      <div id="feed" aria-live="polite"></div>
+    </section>
+    <section class="panel">
+      <h2>Oblivion Mirror — trust vector</h2>
+      <div class="gauge"><i id="tvBar"></i></div>
+      <div class="kv" id="tvChips"><span>Run an audit to anchor the trust vector.</span></div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel">
+      <h2>QR studio</h2>
+      <form class="qr" id="qrForm">
+        <input type="text" id="qrText" placeholder="Text or link to encode" maxlength="1000" required>
+        <div class="qrrow">
+          Shape <select id="qrShape"><option value="square">Square</option><option value="dot">Dots</option></select>
+          <label class="colorlab">Ink <input type="color" id="qrDark" value="#0d0d10"></label>
+          <label class="colorlab">Paper <input type="color" id="qrLight" value="#ffffff"></label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="qrLogo"> Logo slot</label>
+        </div>
+        <div class="qrrow">
+          <button class="primary" type="submit">Generate</button>
+          <button type="button" id="qrSave" disabled>Download SVG</button>
+        </div>
+      </form>
+      <div id="qrOut"><span class="note">Your code renders here.</span></div>
+      <p class="note">Logo slot reserves a clear center (error-correction is raised to maximum automatically). Drop your logo onto the SVG in any editor.</p>
+    </section>
+    <section class="panel">
+      <h2>Live activity</h2>
+      <div id="live"><div>Connecting…</div></div>
+    </section>
+  </div>
+</main>
+
+<div class="modal" id="authModal">
+  <div class="panel">
+    <h1>Enter the fortress</h1>
+    <p>One account. Your memory, audits, and swarm — isolated to you.</p>
+    <div class="tabs">
+      <button id="tabIn" class="on" type="button">Sign in</button>
+      <button id="tabUp" type="button">Create account</button>
+    </div>
+    <form id="authForm">
+      <input type="email" id="authEmail" placeholder="Email" required autocomplete="username">
+      <input type="password" id="authPw" placeholder="Password (10+ characters)" required minlength="10" autocomplete="current-password">
+      <div id="authErr"></div>
+      <button class="primary" type="submit" id="authGo">Sign in</button>
+    </form>
+    <p class="note" style="margin-top:10px">“Not a truth anchor. Use only as boxed tool.” — TRUST-LOCK</p>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+let token = localStorage.getItem("jf_token") || "";
+let mode = "in";
+let lastSvg = "";
+
+/* ---------- theme + accents (persisted) ---------- */
+const root = document.documentElement;
+function applyPrefs(){
+  root.dataset.theme = localStorage.getItem("jf_theme") || "dark";
+  const a = localStorage.getItem("jf_accA") || "#5E9FE8";
+  const b = localStorage.getItem("jf_accB") || "#72BC8F";
+  root.style.setProperty("--a", a); root.style.setProperty("--b", b);
+  $("#accA").value = a; $("#accB").value = b;
+}
+$("#themeBtn").onclick = () => {
+  localStorage.setItem("jf_theme", root.dataset.theme === "dark" ? "light" : "dark"); applyPrefs();
+};
+$("#accA").oninput = e => { localStorage.setItem("jf_accA", e.target.value); applyPrefs(); };
+$("#accB").oninput = e => { localStorage.setItem("jf_accB", e.target.value); applyPrefs(); };
+applyPrefs();
+
+/* ---------- api ---------- */
+async function api(path, opts = {}){
+  opts.headers = Object.assign({"Content-Type":"application/json"}, opts.headers || {});
+  if (token) opts.headers["Authorization"] = "Bearer " + token;
+  let res, body;
+  try { res = await fetch(path, opts); } catch (e) { throw new Error("Can't reach the fortress server."); }
+  const text = await res.text();
+  try { body = JSON.parse(text); } catch { body = { raw: text }; }
+  if (res.status === 401){ showAuth(true); throw new Error(body.error || "Please sign in."); }
+  if (!res.ok) throw new Error(body.error || ("Request failed (" + res.status + ")"));
+  return body;
+}
+
+/* ---------- auth ---------- */
+function showAuth(show){ $("#authModal").classList.toggle("hidden", !show); }
+function setTab(m){
+  mode = m;
+  $("#tabIn").classList.toggle("on", m === "in");
+  $("#tabUp").classList.toggle("on", m === "up");
+  $("#authGo").textContent = m === "in" ? "Sign in" : "Create account";
+  $("#authPw").autocomplete = m === "in" ? "current-password" : "new-password";
+}
+$("#tabIn").onclick = () => setTab("in");
+$("#tabUp").onclick = () => setTab("up");
+$("#authForm").onsubmit = async e => {
+  e.preventDefault(); $("#authErr").textContent = "";
+  try {
+    const body = JSON.stringify({ email: $("#authEmail").value.trim(), password: $("#authPw").value });
+    const r = await api(mode === "in" ? "/api/login" : "/api/signup", { method: "POST", body });
+    token = r.token; localStorage.setItem("jf_token", token);
+    showAuth(false); boot();
+  } catch (err) { $("#authErr").textContent = err.message; }
+};
+$("#logoutBtn").onclick = async () => {
+  try { await api("/api/logout", { method: "POST", body: "{}" }); } catch {}
+  token = ""; localStorage.removeItem("jf_token");
+  $("#who").textContent = "not signed in"; $("#usage").textContent = "\u2014";
+  showAuth(true);
+};
+
+/* ---------- feed ---------- */
+function post(kind, node, isErr){
+  const d = document.createElement("div");
+  d.className = "entry" + (isErr ? " err" : "");
+  const k = document.createElement("div"); k.className = "k"; k.textContent = kind;
+  d.appendChild(k);
+  if (typeof node === "string"){ const p = document.createElement("pre"); p.textContent = node; d.appendChild(p); }
+  else d.appendChild(node);
+  $("#feed").prepend(d);
+  while ($("#feed").children.length > 40) $("#feed").lastChild.remove();
+}
+function pretty(obj){ return JSON.stringify(obj, null, 2); }
+
+function renderAudit(a){
+  const box = document.createElement("div");
+  const kv = document.createElement("div"); kv.className = "kv";
+  const contra = (a.contradictions || []).length;
+  const spots = (a.blind_spots || []).length;
+  kv.innerHTML = "<span>Contradictions <b>" + contra + "</b></span>" +
+                 "<span>Blind spots <b>" + spots + "</b></span>" +
+                 "<span>Timeline entries <b>" + ((a.timeline || []).length) + "</b></span>";
+  box.appendChild(kv);
+  const pre = document.createElement("pre"); pre.textContent = pretty(a); box.appendChild(pre);
+  updateTrust(a);
+  return box;
+}
+function updateTrust(a){
+  const tv = typeof a === "number" ? a : (a && typeof a.trust_vector === "number" ? a.trust_vector : null);
+  if (tv === null) return;
+  const chips = $("#tvChips"); chips.innerHTML = "";
+  const mk = (label, val) => {
+    const s = document.createElement("span");
+    const b = document.createElement("b"); b.textContent = val;
+    s.append(label + " ", b); chips.appendChild(s);
+  };
+  mk("trust vector", tv.toFixed(4));
+  mk("reading", tv >= 0.85 ? "stable" : tv >= 0.6 ? "watch" : "unstable \u2014 review contradictions");
+  if (a && typeof a === "object"){
+    if (Array.isArray(a.contradictions)) mk("contradictions", a.contradictions.length);
+    if (Array.isArray(a.drift_loops)) mk("drift loops", a.drift_loops.length);
+    if (Array.isArray(a.blind_spots)) mk("blind spots", a.blind_spots.length);
+  }
+  $("#tvBar").style.width = Math.max(0, Math.min(100, tv * 100)) + "%";
+}
+
+/* ---------- commands ---------- */
+async function runCommand(command, arg){
+  try {
+    const r = await api("/api/command", { method: "POST", body: JSON.stringify({ command, arg }) });
+    const res = r.result;
+    if (command === "audit") post("Audit", renderAudit(res));
+    else post(command[0].toUpperCase() + command.slice(1), pretty(res));
+    refreshMe();
+  } catch (err) { post("Problem", err.message, true); }
+}
+async function runIntent(text){
+  try {
+    const r = await api("/api/intent", { method: "POST", body: JSON.stringify({ text }) });
+    const head = "Understood as \u201c" + r.plan.command + (r.plan.arg ? ": " + r.plan.arg : "") + "\u201d";
+    if (r.plan.command === "audit") post(head, renderAudit(r.result));
+    else post(head, pretty(r.result));
+    refreshMe();
+  } catch (err) { post("Problem", err.message, true); }
+}
+$("#sendBtn").onclick = () => {
+  const t = $("#cmdIn").value.trim(); if (!t) return;
+  $("#cmdIn").value = ""; runIntent(t);
+};
+$("#cmdIn").addEventListener("keydown", e => { if (e.key === "Enter") $("#sendBtn").click(); });
+document.querySelectorAll(".quick button").forEach(b => b.onclick = () => runCommand(b.dataset.q));
+
+/* ---------- QR studio ---------- */
+$("#qrForm").onsubmit = async e => {
+  e.preventDefault();
+  const q = new URLSearchParams({
+    text: $("#qrText").value.trim(), dark: $("#qrDark").value, light: $("#qrLight").value,
+    shape: $("#qrShape").value, logo: $("#qrLogo").checked ? "1" : "0",
+  });
+  try {
+    const res = await fetch("/api/qr?" + q, { headers: { Authorization: "Bearer " + token } });
+    if (res.status === 401){ showAuth(true); return; }
+    if (!res.ok){ const b = await res.json().catch(() => ({})); throw new Error(b.error || "QR failed"); }
+    lastSvg = await res.text();
+    $("#qrOut").innerHTML = lastSvg;
+    $("#qrSave").disabled = false;
+    refreshMe();
+  } catch (err) { post("QR problem", err.message, true); }
+};
+$("#qrSave").onclick = () => {
+  const blob = new Blob([lastSvg], { type: "image/svg+xml" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "fortress-qr.svg"; a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+/* ---------- billing ---------- */
+$("#upgradeBtn").onclick = async () => {
+  const plan = prompt("Upgrade to which plan? Type: pro ($19/mo, 5,000/day) or fortress ($49/mo, 50,000/day)", "pro");
+  if (!plan) return;
+  try {
+    const r = await api("/api/billing/checkout", { method: "POST", body: JSON.stringify({ plan: plan.trim().toLowerCase() }) });
+    if (r.url) location.href = r.url;
+  } catch (err) { post("Billing", err.message, true); }
+};
+
+/* ---------- account + live stream ---------- */
+async function refreshMe(){
+  try {
+    const me = await api("/api/me");
+    $("#who").innerHTML = "<b>" + me.email + "</b>&nbsp;·&nbsp;" + me.plan;
+    $("#usage").innerHTML = "today <b>" + me.used_today + "</b> / " + me.limit;
+  } catch {}
+}
+let ws = null;
+function connectWs(){
+  if (!token) return;
+  try { ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws/events?token=" + encodeURIComponent(token)); }
+  catch { return; }
+  ws.onmessage = ev => {
+    const box = $("#live");
+    let msg = ev.data;
+    try { const j = JSON.parse(msg); msg = (j.cat || j.status || "event") + " " + JSON.stringify(j.payload || ""); } catch {}
+    const d = document.createElement("div"); d.textContent = msg;
+    box.prepend(d);
+    while (box.children.length > 60) box.lastChild.remove();
+  };
+  ws.onclose = () => setTimeout(connectWs, 4000);
+}
+async function boot(){
+  await refreshMe();
+  post("Fortress", "All five layers online. Type a request above \u2014 plain English is fine.");
+  connectWs();
+}
+if (token){ showAuth(false); boot(); } else showAuth(true);
+</script>
+</body>
+</html>

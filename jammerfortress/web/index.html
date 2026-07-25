@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JAMMER-FORTRESS — Fused Memory &amp; Audit Runtime</title>
+<style>
+:root{
+  --bg:#0d0d10;--surface:rgba(255,255,255,.045);--raised:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.12);--text:#f2f2f5;--muted:rgba(242,242,245,.62);
+  --a:#5E9FE8;--b:#72BC8F;--danger:#E97366;
+  --shadow:0 20px 60px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(60rem 40rem at 15% -10%,color-mix(in srgb,var(--a) 22%,transparent),transparent 60%),
+             radial-gradient(50rem 36rem at 110% 30%,color-mix(in srgb,var(--b) 16%,transparent),transparent 60%)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+header{display:flex;align-items:center;justify-content:space-between;padding:22px 0;flex-wrap:wrap;gap:10px}
+.logo{font-weight:800;letter-spacing:.14em;font-size:15px}
+.logo em{font-style:normal;color:var(--a)}
+nav{display:flex;align-items:center}
+nav a{color:var(--muted);text-decoration:none;margin-left:22px;font-size:14px}
+nav a:hover{color:var(--text)}
+.btn{display:inline-block;padding:12px 22px;border-radius:12px;border:1px solid var(--border);
+  background:var(--raised);color:var(--text);text-decoration:none;font-weight:600;font-size:15px;
+  transition:transform .15s ease,background .15s ease;cursor:pointer}
+.btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.14)}
+.btn.primary{background:linear-gradient(135deg,var(--a),color-mix(in srgb,var(--a) 55%,var(--b)));
+  border-color:transparent;color:#0b0b0e}
+.hero{padding:72px 0 40px;text-align:center}
+.hero h1{font-size:clamp(34px,6vw,58px);line-height:1.12;font-weight:800;letter-spacing:-.02em}
+.hero h1 span{background:linear-gradient(90deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{max-width:620px;margin:20px auto 0;color:var(--muted);font-size:18px}
+.cta{margin-top:32px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.badge{display:inline-block;margin-bottom:18px;padding:6px 14px;border-radius:999px;
+  border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12.5px;letter-spacing:.08em}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));padding:44px 0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow)}
+.card h3{font-size:16px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.card .n{width:26px;height:26px;flex:0 0 26px;border-radius:8px;display:grid;place-items:center;
+  font-size:12.5px;font-weight:700;color:#0b0b0e;background:linear-gradient(135deg,var(--a),var(--b))}
+.card p{color:var(--muted);font-size:14.5px}
+h2.sec{text-align:center;font-size:28px;letter-spacing:-.01em;padding-top:24px}
+p.sub{text-align:center;color:var(--muted);margin-top:8px}
+.pricing{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));padding:36px 0 20px}
+.price .amount{font-size:38px;font-weight:800;margin:10px 0 2px}
+.price .amount small{font-size:14px;color:var(--muted);font-weight:500}
+.price ul{list-style:none;margin:16px 0 22px;color:var(--muted);font-size:14.5px}
+.price li{padding:5px 0 5px 24px;position:relative}
+.price li::before{content:"✓";position:absolute;left:0;color:var(--b);font-weight:700}
+.price.featured{border-color:color-mix(in srgb,var(--a) 60%,var(--border));position:relative}
+.price.featured::after{content:"MOST POPULAR";position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+  font-size:10.5px;letter-spacing:.12em;padding:4px 12px;border-radius:999px;color:#0b0b0e;
+  background:linear-gradient(90deg,var(--a),var(--b));font-weight:700}
+.contract{margin:44px 0;text-align:center}
+.contract .card{max-width:640px;margin:0 auto}
+.contract q{font-size:17px}
+footer{padding:36px 0 48px;color:var(--muted);font-size:13px;text-align:center;border-top:1px solid var(--border);margin-top:30px}
+@media (max-width:640px){nav a{margin-left:14px}.hero{padding-top:48px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🔐 JAMMER-<em>FORTRESS</em></div>
+    <nav aria-label="main">
+      <a href="#layers">Layers</a>
+      <a href="#pricing">Pricing</a>
+      <a class="btn" style="padding:9px 16px;margin-left:22px" href="/console">Open Console</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="badge">FUSEPACK LOCK-IN · FIVE LAYERS · ONE RUNTIME</div>
+    <h1>A memory that argues<br><span>with itself — so you don't have to.</span></h1>
+    <p>JAMMER-FORTRESS remembers what you tell it, hunts down contradictions and blind spots
+       in what it knows, and routes your requests through a swarm of specialist agents.
+       No coding required. Everything it does is inspectable.</p>
+    <div class="cta">
+      <a class="btn primary" href="/console">Start free — 200 commands/day</a>
+      <a class="btn" href="#layers">See how it works</a>
+    </div>
+  </section>
+
+  <h2 class="sec" id="layers">Five layers, locked together</h2>
+  <p class="sub">Each layer is a real subsystem, running live behind the console.</p>
+  <section class="grid">
+    <div class="card"><h3><span class="n">1</span>EXO-LATTICE</h3>
+      <p>The resilient runtime: circuit breakers, retries with backoff, signed session tokens,
+         rate limiting, a sanitized audit queue, and live telemetry on everything.</p></div>
+    <div class="card"><h3><span class="n">2</span>TRI-SKIN UI</h3>
+      <p>Black/white switchable console with dual accent color picking, glass panels,
+         and a QR studio (shapes, colors, logo slot). Zero developer jargon.</p></div>
+    <div class="card"><h3><span class="n">3</span>OBLIVION MIRROR</h3>
+      <p>Audits the memory mesh: contradiction detection, a cross-exam blind-spot index,
+         a full timeline trail, and Trust Vector Anchoring™ that flags instability loops.</p></div>
+    <div class="card"><h3><span class="n">4</span>BOSSWRAP-88</h3>
+      <p>A swarm of specialist agents — researcher, legal, builder, validator — that share one
+         context and hand each task down a routed pipeline. Connects to Stripe, Notion, Gumroad, Neon.</p></div>
+    <div class="card"><h3><span class="n">5</span>TRUST-LOCK</h3>
+      <p>Explicit behavior contracts, enforced in code: no false confidence, no filler,
+         no echoes. Every output is scannable against the contract.</p></div>
+    <div class="card"><h3><span class="n">+</span>Built to survive</h3>
+      <p>Your memory persists across sessions, saves atomically, and the whole stack
+         ships with a forensic self-test you can run any time.</p></div>
+  </section>
+
+  <h2 class="sec" id="pricing">Pricing</h2>
+  <p class="sub">Start free. Upgrade when the fortress becomes your daily driver.</p>
+  <section class="pricing">
+    <div class="card price">
+      <h3>Free</h3><div class="amount">$0<small>/mo</small></div>
+      <ul><li>200 commands per day</li><li>Full memory mesh &amp; audits</li>
+          <li>QR studio</li><li>Live activity stream</li></ul>
+      <a class="btn" href="/console">Get started</a>
+    </div>
+    <div class="card price featured">
+      <h3>Pro</h3><div class="amount">$19<small>/mo</small></div>
+      <ul><li>5,000 commands per day</li><li>Everything in Free</li>
+          <li>Priority swarm routing</li><li>Stripe-billed, cancel anytime</li></ul>
+      <a class="btn primary" href="/console">Upgrade in console</a>
+    </div>
+    <div class="card price">
+      <h3>Fortress</h3><div class="amount">$49<small>/mo</small></div>
+      <ul><li>50,000 commands per day</li><li>Everything in Pro</li>
+          <li>Heavy-duty audit workloads</li><li>Stripe-billed, cancel anytime</li></ul>
+      <a class="btn" href="/console">Upgrade in console</a>
+    </div>
+  </section>
+
+  <section class="contract">
+    <div class="card">
+      <h3 style="justify-content:center">The TRUST-LOCK admission</h3>
+      <p><q>Not a truth anchor. Use only as boxed tool.</q><br><br>
+      JAMMER-FORTRESS is never the final authority. It is an inspectable component:
+      every claim it stores can be audited, every contradiction it finds is shown with evidence,
+      and every limit it hits is reported honestly.</p>
+    </div>
+  </section>
+
+  <footer>JAMMER-FORTRESS · FUSEPACK v2.0 · runs entirely on your machine ·
+    <a href="/healthz" style="color:inherit">status</a></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,7 @@
+# JAMMER-FORTRESS core has zero runtime dependencies (Python 3.10+ stdlib).
+# This file exists so platform builders (Railway Nixpacks, etc.) detect Python.
+#
+# OPTIONAL semantic upgrade (real sentence-transformer embeddings, offline at
+# inference): uncomment the next line, then run
+#   python3 -m jammerfortress get-model     (or set JF_EMBED_AUTO_FETCH=1)
+# onnxruntime
