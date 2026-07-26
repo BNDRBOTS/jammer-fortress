@@ -62,12 +62,17 @@ the database and kernel report healthy.
 
 ## Semantic engine (embedding backends)
 
-Two interchangeable backends power the memory mesh and OBLIVION-MIRROR:
+Three interchangeable backends power the memory mesh and OBLIVION-MIRROR:
 
 | Backend | Cost | Honest quality note |
 |---------|------|--------------------|
-| `hash` (default) | Zero deps, zero download | Paraphrases with **no shared vocabulary** score low — e.g. “the hearing was rescheduled” vs “the date moved” can slip past contradiction detection. |
-| `onnx` | One-time ~90 MB download + `pip install onnxruntime` | Real sentence-transformer (all-MiniLM-L6-v2). Catches vocabulary-free paraphrases. **Inference is fully offline** — network is used only by the one-time download. |
+| `syn` (default) | Zero deps — a ~145k-entry thesaurus ships inside the package | Paraphrase-aware: “the lawyer kept the file” and “the attorney retained the file” land close together, so reworded contradictions get caught. Limits it admits to: irregular word forms (kept/keep) and sense-shifted rewrites can still slip. |
+| `hash` | Zero deps, zero data | Fallback floor only. Paraphrases with **no shared vocabulary** score low and can slip past contradiction detection. |
+| `onnx` | One-time ~90 MB download + `pip install onnxruntime` | Real sentence-transformer (all-MiniLM-L6-v2). The strongest option — catches vocabulary-free paraphrases. **Inference is fully offline** — network is used only by the one-time download. |
+
+Selection is automatic: `onnx` when installed, else `syn` (bundled, so this is
+what you get out of the box), else `hash`. Every downgrade is recorded and
+shown in `stats` — the engine never silently pretends to be smarter than it is.
 
 Upgrade (two commands, then restart — it auto-activates):
 
@@ -92,9 +97,14 @@ variable name), never silently and never with fake data.
 | Variable | Purpose |
 |----------|---------|
 | `JF_SECRET` | Token-signing secret. If unset, one is generated and stored at `<data-dir>/secret.key` (0600). |
-| `JF_EMBED_BACKEND` | `auto` (default), `hash`, or `onnx`. |
+| `JF_EMBED_BACKEND` | `auto` (default), `syn`, `hash`, or `onnx`. |
 | `JF_EMBED_MODEL_DIR` | Where the ONNX model lives (default `./models/embedder`). |
 | `JF_EMBED_AUTO_FETCH` | `1` = download the model into the data dir on boot if missing. |
+| `JF_THESAURUS` | Override path to a MyThes-format `.dat` (bundled English data used by default). |
+| `JF_PUBLIC_URL` | Your public URL (e.g. `https://app.example.com`). **Set this in production** — it pins Stripe redirect links so a spoofed Host header can never steer them. |
+| `JF_MESH_CAPACITY` | Total kernel memory entries (default 100,000). |
+| `JF_MESH_PER_USER` | Per-user memory quota (default 1,000) — one user can never evict another’s memories. |
+| `JF_LOGIN_FAIL_MAX` | Failed logins per ip+email before a 15-minute lockout (default 5). |
 | `STRIPE_SECRET_KEY` | Enables live Stripe checkout + billing portal. |
 | `STRIPE_WEBHOOK_SECRET` | Enables `/api/billing/webhook` signature verification. |
 | `STRIPE_PRICE_PRO` / `STRIPE_PRICE_FORTRESS` | Stripe Price IDs for the paid plans. |
@@ -118,7 +128,12 @@ variable name), never silently and never with fake data.
 - Sessions/API keys: opaque bearer tokens, stored **only** as SHA-256 hashes.
 - No cookies → no CSRF surface. Strict CSP, `X-Frame-Options: DENY`, nosniff.
 - Per-IP rate limit (120 req/min), 64 KB body cap, parameterized SQL only.
-- Per-user memory isolation inside the kernel (verified by the self-test).
+- Failed-login throttle: 5 misses per ip+email = 15-minute lockout (anti password-spray).
+- Stripe webhook replay guard: every event id is recorded once; duplicates are ignored.
+- Per-user memory isolation **and** per-user memory quotas inside the kernel
+  (one user can’t read or evict another’s memories) — verified by the self-test.
+- Live event stream (`/ws/events`) is per-user: you see your own activity and
+  system boot events only, never other users’.
 - Event log auto-redacts sensitive fields; secrets never appear in telemetry.
 - State saves atomically (`os.replace`) — a crash can’t corrupt it.
 
